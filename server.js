@@ -1,58 +1,49 @@
-/*
-        Simple API example
-        NODEJS natives http
-*/
-const http = require("node:http")
+let port = 80
+let http = require("node:http")
 
-//database
-const db = [
-        {name: "lobo", valid: false},
-        {name: "test", valid: true}
+//example database
+let db = [
+        {username: "/test"}
 ]
 
-//server
-const server = http.createServer((req,res) =>
+let server = http.createServer((req,res) =>
 {
-        let getName = null
+        if(req.method === "GET"){
+                let username = null
 
-        const getUrl = req.url.split("/")[1] || null
+                db.forEach((e) =>{
+                        if(req.url === e.username){
+                                username = e.username
+                        }
+                })
 
-        db.forEach((e) =>{
-                if(getUrl === e.name && e.valid === true){
-                        getName = e.name
+                res.setHeader("Content-type","application/json")
+                res.setHeader("Acces-Control-Allow-Origin","*")
+
+                if(username !== null){
+                        res.writeHead(200)
+
+                        res.end(JSON.stringify({
+                                status: 200,
+                                username: username,
+                                error: false
+                        }))
                 }
                 else{
-                        return null
+                        res.writeHead(404)
+
+                        res.end(JSON.stringify({
+                                status: 404,
+                                username: username,
+                                error: true
+                        }))
                 }
-        })
-
-        res.setHeader("Content-type","application/json")
-        res.setHeader("Acces-Control-Allow-Origin","*")
-
-        if(getName){
-                res.writeHead(200)
-
-                res.end(JSON.stringify({
-                        status: 200,
-                        info: getName
-                }))
-        }
-        else if(req.url === "/"){
-                res.writeHead(200)
-
-                res.end(JSON.stringify({
-                        status: 200,
-                        info: db
-                }))
         }
         else{
-                res.writeHead(404)
-
-                res.end(JSON.stringify({
-                        status: 404,
-                        info: getName
-                }))
+                res.end(`error`)
         }
 })
 
-server.listen(3331)
+server.listen(port,() =>{
+        console.log(`[DEBUG] Starting http server on port ${port}.`)
+})
